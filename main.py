@@ -124,32 +124,32 @@ class Grammar:
             follow = ', '.join(sorted(self.follow_sets[non_terminal]))
             print(f"FOLLOW({non_terminal}) = {{ {follow} }}")
 
-def parse_grammar():
+def parse_grammar_from_file(filename):
     """
-    Solicita al usuario que introduzca las producciones de la gramática y las procesa.
+    Lee las producciones de la gramática desde un archivo y las procesa.
 
+    :param filename: El nombre del archivo que contiene la gramática.
     :return: Una tupla que contiene el diccionario de producciones y el símbolo inicial.
     """
     productions = defaultdict(list)
-    # Solicitar el símbolo inicial
-    start_symbol = input("Introduce el símbolo inicial: ").strip()
-    
-    # Solicitar el número de producciones con validación
-    while True:
-        try:
-            n = int(input("Introduce el número de producciones: "))
-            break
-        except ValueError:
-            print("Por favor, introduce un número válido para el número de producciones.")
-    
-    print("Introduce las producciones en el formato A -> α | β, usa 'ε' para la cadena vacía:")
-    
-    # Leer cada producción
-    for _ in range(n):
-        while True:
-            line = input().strip()
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+
+        # Remover líneas vacías y quitar espacios en blanco
+        lines = [line.strip() for line in lines if line.strip()]
+        
+        if not lines:
+            print("El archivo está vacío.")
+            return None, None
+
+        # La primera línea es el símbolo inicial
+        start_symbol = lines[0]
+        
+        # Procesar las producciones
+        for line in lines[1:]:
             if '->' not in line:
-                print("Formato incorrecto, por favor usa '->' para separar el lado izquierdo y derecho.")
+                print(f"Formato incorrecto en la línea: {line}")
                 continue
             lhs, rhs = line.split('->')
             lhs = lhs.strip()
@@ -163,15 +163,25 @@ def parse_grammar():
                     productions[lhs].append([])
                 else:
                     productions[lhs].append(production)
-            break  # Salir del bucle interno una vez que la producción ha sido procesada correctamente
-    return productions, start_symbol
+        return productions, start_symbol
+
+    except FileNotFoundError:
+        print(f"No se pudo encontrar el archivo: {filename}")
+        return None, None
 
 def main():
     """
     Función principal que ejecuta el programa.
     """
-    # Parsear las producciones y el símbolo inicial introducidos por el usuario
-    productions, start_symbol = parse_grammar()
+    # Pedir el nombre del archivo que contiene la gramática
+    filename = input("Introduce el nombre del archivo que contiene la gramática: ").strip()
+    
+    # Parsear las producciones y el símbolo inicial desde el archivo
+    productions, start_symbol = parse_grammar_from_file(filename)
+    
+    if productions is None or start_symbol is None:
+        print("No se pudo leer la gramática desde el archivo.")
+        return
     
     # Crear una instancia de Grammar con las producciones y el símbolo inicial
     grammar = Grammar(productions, start_symbol)

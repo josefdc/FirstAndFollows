@@ -1,0 +1,6 @@
+exp
+exp  -> term exp'
+exp' -> + term exp' | - term exp' | ε
+term  -> factor term'
+term' -> * factor term' | / factor term' | ε
+factor  -> ( exp ) | num | id
